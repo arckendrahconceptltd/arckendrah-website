@@ -2,7 +2,7 @@
   "shipments": [
     {
       "id": "ARC-001",
-      "status": "Custom cleared- on rout for delivery",
+      "status": "Custom cleared - on rout for delivery",
       "color": "text-green-400"
     },
     {
