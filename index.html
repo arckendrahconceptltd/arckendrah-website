@@ -149,7 +149,7 @@
                 </p>
                 <div class="flex gap-4">
                     <a href="#inquiry" class="px-8 py-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded shadow-lg transition">Get Quote</a>
-                    <button class="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded backdrop-blur transition">Track ID</button>
+                    <button onclick="openTrackingModal()" class="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded backdrop-blur transition">Track ID</button>
                 </div>
             </div>
 
@@ -393,20 +393,71 @@
         <i class="fa-brands fa-whatsapp text-3xl"></i>
     </a>
 
-    <script>
-        AOS.init();
-        
-        // --- NETLIFY IDENTITY REDIRECT LOGIC ---
-        // This checks if the user just logged in and sends them to the Admin panel
-        if (window.netlifyIdentity) {
-            window.netlifyIdentity.on("init", user => {
-                if (!user) {
-                    window.netlifyIdentity.on("login", () => {
-                        document.location.href = "/admin.html";
-                    });
-                }
-            });
+<div id="trackingModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-orange-500/30 p-8 rounded-2xl w-full max-w-md shadow-2xl transform transition-all scale-100 relative">
+        <button onclick="closeTrackingModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <div class="text-center mb-6">
+            <h3 class="text-2xl font-brand font-bold text-white mb-2">Track Shipment</h3>
+            <p class="text-gray-400 text-sm">Enter your Consignment or Container ID</p>
+        </div>
+        <div class="flex gap-2 mb-6">
+            <input type="text" id="trackInput" placeholder="e.g., ARC-001" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-orange-500 outline-none uppercase">
+            <button onclick="checkStatus()" class="bg-orange-600 hover:bg-orange-500 text-white px-6 rounded-lg font-bold"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        <div id="trackResult" class="hidden text-center p-4 rounded-lg border border-white/10 bg-white/5"></div>
+    </div>
+</div>
+
+<script>
+    // 1. Initialize Animation
+    AOS.init();
+
+    // 2. YOUR SHIPMENT DATABASE (EDIT THIS LIST)
+    const shipmentDatabase = {
+        "ARC-001": { status: "Arrived at Lagos Terminal", color: "text-green-400" },
+        "MSKU-99281": { status: "In Transit - Atlantic Ocean", color: "text-blue-400" },
+        "DHL-5540": { status: "Customs Clearance Pending", color: "text-yellow-400" },
+        "ARC-TEST": { status: "Ready for Pickup", color: "text-orange-400" }
+    };
+
+    // 3. TRACKING LOGIC
+    function openTrackingModal() {
+        document.getElementById('trackingModal').classList.remove('hidden');
+        document.getElementById('trackingModal').classList.add('flex');
+    }
+    function closeTrackingModal() {
+        document.getElementById('trackingModal').classList.add('hidden');
+        document.getElementById('trackingModal').classList.remove('flex');
+        document.getElementById('trackResult').classList.add('hidden');
+        document.getElementById('trackInput').value = '';
+    }
+    function checkStatus() {
+        const input = document.getElementById('trackInput').value.toUpperCase().trim();
+        const resultBox = document.getElementById('trackResult');
+        if (shipmentDatabase[input]) {
+            const data = shipmentDatabase[input];
+            resultBox.innerHTML = `
+                <div class="text-xs text-gray-500 uppercase tracking-widest mb-1">Current Status</div>
+                <div class="text-lg font-bold ${data.color}">${data.status}</div>
+                <div class="mt-2 text-xs text-gray-400">Last Updated: Just now</div>
+            `;
+            resultBox.classList.remove('hidden');
+        } else {
+            resultBox.innerHTML = `<div class="text-red-400 font-bold">ID Not Found</div>`;
+            resultBox.classList.remove('hidden');
         }
-    </script>
+    }
+
+    // 4. NETLIFY IDENTITY REDIRECT
+    if (window.netlifyIdentity) {
+        window.netlifyIdentity.on("init", user => {
+            if (!user) {
+                window.netlifyIdentity.on("login", () => {
+                    document.location.href = "/admin.html";
+                });
+            }
+        });
+    }
+</script>
 </body>
 </html>
