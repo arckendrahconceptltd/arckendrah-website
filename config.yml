@@ -1,0 +1,22 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "uploads"
+public_folder: "/uploads"
+
+collections:
+  - name: "tracking"
+    label: "Tracking Database"
+    files:
+      - file: "tracking.json"
+        name: "shipments"
+        label: "Shipments List"
+        fields:
+          - label: "Shipments"
+            name: "shipments"
+            widget: "list"
+            fields:
+              - {label: "Tracking ID", name: "id", widget: "string", default: "ARC-"}
+              - {label: "Status Message", name: "status", widget: "string"}
+              - {label: "Status Color", name: "color", widget: "select", options: ["text-green-400", "text-blue-400", "text-orange-400", "text-red-400", "text-gray-400"]}
