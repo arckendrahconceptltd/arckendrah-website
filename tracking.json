@@ -9,6 +9,11 @@
       "id": "MSKU-99281",
       "status": "In Transit - Atlantic Ocean",
       "color": "text-blue-400"
+    },
+    {
+      "id": "ARC-003",
+      "status": "pending",
+      "color": "text-gray-400"
     }
   ]
 }
