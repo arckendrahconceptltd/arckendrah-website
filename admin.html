@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arckendrah HQ | Command Console</title>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { font-size: 24px; font-weight: bold; }
+        .logo span { color: #3b82f6; }
+        .user-badge { background: #1e293b; padding: 8px 16px; border-radius: 20px; font-size: 14px; border: 1px solid #334155; }
+
+        /* KPI Cards */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .card { background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; }
+        .card h3 { color: #94a3b8; font-size: 13px; text-transform: uppercase; margin-top: 0; letter-spacing: 1px; }
+        .value { font-size: 36px; font-weight: bold; margin: 10px 0; }
+        .status-dot { display: inline-block; width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-right: 5px; }
+
+        /* The Control Panel (Form) */
+        .control-panel { background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 30px; }
+        .panel-title { margin-bottom: 20px; font-size: 18px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .form-row { display: flex; gap: 15px; }
+        input, select { flex: 1; padding: 12px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px; outline: none; }
+        input:focus { border-color: #3b82f6; }
+        button.add-btn { background: #3b82f6; color: white; border: none; padding: 12px 30px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button.add-btn:hover { background: #2563eb; }
+
+        /* The Database Table */
+        .table-container { background: #1e293b; padding: 0 25px 25px 25px; border-radius: 12px; border: 1px solid #334155; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: #94a3b8; border-bottom: 1px solid #334155; padding: 20px 10px; font-size: 14px; }
+        td { padding: 20px 10px; border-bottom: 1px solid #334155; }
+        
+        .tag { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .tag-active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .tag-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        
+        .delete-btn { color: #ef4444; background: none; border: none; cursor: pointer; font-size: 18px; }
+        .delete-btn:hover { color: #dc2626; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo">ARCK<span>EN</span>DRAH <span style="font-size: 14px; color: #64748b;">// HQ</span></div>
+        <div class="user-badge"><span class="status-dot"></span> Kenneth (CEO)</div>
+    </div>
+
+    <div class="card-grid">
+        <div class="card">
+            <h3>Total Pipeline Value</h3>
+            <div class="value" id="totalValue">£0</div>
+        </div>
+        <div class="card">
+            <h3>Active Deals</h3>
+            <div class="value" id="dealCount">0</div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <div class="panel-title">+ New Deal Entry</div>
+        <div class="form-row">
+            <input type="text" id="clientName" placeholder="Client Name (e.g. Laylo)">
+            <input type="text" id="dealProduct" placeholder="Product (e.g. Öküzgözü)">
+            <input type="number" id="dealValue" placeholder="Value (£)">
+            <select id="dealStatus">
+                <option value="Pending">Pending</option>
+                <option value="Active">Active</option>
+                <option value="Shipped">Shipped</option>
+            </select>
+            <button class="add-btn" onclick="addDeal()">Add to DB</button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>CLIENT</th>
+                    <th>PRODUCT</th>
+                    <th>VALUE</th>
+                    <th>STATUS</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+            <tbody id="dealTable">
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        // 1. Security Check (Login)
+        const password = "CEO"; 
+        if (sessionStorage.getItem("loggedIn") !== "true") {
+            let entry = prompt("Enter Admin Password:");
+            if (entry !== password) {
+                window.location.href = "index.html"; 
+            } else {
+                sessionStorage.setItem("loggedIn", "true");
+            }
+        }
+
+        // 2. Load Database on Startup
+        let deals = JSON.parse(localStorage.getItem('arckendrahDeals')) || [];
+        renderTable();
+
+        // 3. Function to Add a Deal
+        function addDeal() {
+            const client = document.getElementById('clientName').value;
+            const product = document.getElementById('dealProduct').value;
+            const value = document.getElementById('dealValue').value;
+            const status = document.getElementById('dealStatus').value;
+
+            if(client && product && value) {
+                const newDeal = { client, product, value, status, id: Date.now() };
+                deals.push(newDeal);
+                saveAndRender();
+                clearInputs();
+            } else {
+                alert("Please fill in all fields");
+            }
+        }
+
+        // 4. Function to Delete a Deal
+        function deleteDeal(id) {
+            if(confirm('Delete this record?')) {
+                deals = deals.filter(deal => deal.id !== id);
+                saveAndRender();
+            }
+        }
+
+        // 5. Core System: Save to Browser Memory & Update Screen
+        function saveAndRender() {
+            localStorage.setItem('arckendrahDeals', JSON.stringify(deals));
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('dealTable');
+            tbody.innerHTML = '';
+            let totalVal = 0;
+
+            deals.forEach(deal => {
+                totalVal += parseInt(deal.value);
+                const statusClass = deal.status === 'Active' ? 'tag-active' : 'tag-pending';
+                
+                const row = `
+                    <tr>
+                        <td><strong>${deal.client}</strong></td>
+                        <td>${deal.product}</td>
+                        <td>£${parseInt(deal.value).toLocaleString()}</td>
+                        <td><span class="tag ${statusClass}">${deal.status}</span></td>
+                        <td><button class="delete-btn" onclick="deleteDeal(${deal.id})">×</button></td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            // Update KPI Cards
+            document.getElementById('dealCount').innerText = deals.length;
+            document.getElementById('totalValue').innerText = '£' + totalVal.toLocaleString();
+        }
+
+        function clearInputs() {
+            document.getElementById('clientName').value = '';
+            document.getElementById('dealProduct').value = '';
+            document.getElementById('dealValue').value = '';
+        }
+    </script>
+</body>
+</html>
