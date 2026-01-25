@@ -1,0 +1,14 @@
+{
+  "shipments": [
+    {
+      "id": "ARC-001",
+      "status": "Arrived at Lagos Terminal",
+      "color": "text-green-400"
+    },
+    {
+      "id": "MSKU-99281",
+      "status": "In Transit - Atlantic Ocean",
+      "color": "text-blue-400"
+    }
+  ]
+}
