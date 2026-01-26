@@ -2,21 +2,60 @@ backend:
   name: git-gateway
   branch: main
 
-media_folder: "uploads"
-public_folder: "/uploads"
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
 
 collections:
-  - name: "tracking"
-    label: "Tracking Database"
-    files:
-      - file: "tracking.json"
-        name: "shipments"
-        label: "Shipments List"
+  - name: "shipments"
+    label: "Shipments"
+    folder: "content/shipments"
+    create: true
+    slug: "{{tracking_id}}"
+    fields:
+      # --- TRACKING INFO ---
+      - {label: "Tracking Number", name: "tracking_id", widget: "string", hint: "e.g., KND-884291"}
+      - {label: "Current Location", name: "location", widget: "string", default: "Lagos, Nigeria"}
+      - {label: "Status", name: "status", widget: "select", options: ["Pending", "Processing", "In Transit", "On Hold", "Out for Delivery", "Delivered"], default: "Pending"}
+      - {label: "Estimated Delivery Date", name: "delivery_date", widget: "datetime"}
+
+      # --- SENDER DETAILS ---
+      - label: "Sender Details"
+        name: "sender"
+        widget: "object"
+        collapsed: true
         fields:
-          - label: "Shipments"
-            name: "shipments"
-            widget: "list"
-            fields:
-              - {label: "Tracking ID", name: "id", widget: "string", default: "ARC-"}
-              - {label: "Status Message", name: "status", widget: "string"}
-              - {label: "Status Color", name: "color", widget: "select", options: ["text-green-400", "text-blue-400", "text-orange-400", "text-red-400", "text-gray-400"]}
+          - {label: "Full Name", name: "name", widget: "string"}
+          - {label: "Phone Number", name: "phone", widget: "string"}
+          - {label: "Address", name: "address", widget: "text"}
+          - {label: "Email", name: "email", widget: "string", required: false}
+
+      # --- RECEIVER DETAILS ---
+      - label: "Receiver Details"
+        name: "receiver"
+        widget: "object"
+        collapsed: false
+        fields:
+          - {label: "Full Name", name: "name", widget: "string"}
+          - {label: "Phone Number", name: "phone", widget: "string"}
+          - {label: "Destination Address", name: "address", widget: "text"}
+          - {label: "Email", name: "email", widget: "string", required: false}
+
+      # --- PACKAGE DETAILS ---
+      - label: "Package Info"
+        name: "package"
+        widget: "object"
+        collapsed: false
+        fields:
+          - {label: "Item Description", name: "description", widget: "text", hint: "e.g., 20kg Box of Electronics"}
+          - {label: "Weight (kg)", name: "weight", widget: "string"}
+          - {label: "Package Image", name: "image", widget: "image", hint: "Upload a photo of the package"}
+
+      # --- PAYMENT INFO ---
+      - label: "Payment Details"
+        name: "payment"
+        widget: "object"
+        collapsed: true
+        fields:
+          - {label: "Shipping Cost", name: "amount", widget: "string", default: "$0.00"}
+          - {label: "Payment Method", name: "method", widget: "select", options: ["Bank Transfer", "Cash", "Crypto", "Credit Card"]}
+          - {label: "Payment Status", name: "status", widget: "select", options: ["Unpaid", "Paid", "Deposit Paid"], default: "Unpaid"}
