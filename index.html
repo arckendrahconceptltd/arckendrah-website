@@ -409,39 +409,64 @@
     <script>
         AOS.init();
 
-        // --- NEW: FETCH FROM JSON DATABASE ---
+        // --- UPDATED: SMART SEARCH FOR REAL ADMIN FILES ---
         async function checkStatus() {
-            const input = document.getElementById('trackInput').value.toUpperCase().trim();
+            // 1. Get the ID the user typed
+            const input = document.getElementById('trackInput').value.trim();
             const resultBox = document.getElementById('trackResult');
             
+            // 2. Show loading animation
             resultBox.innerHTML = '<div class="text-orange-500 animate-pulse">Searching Satellite Network...</div>';
             resultBox.classList.remove('hidden');
 
-            try {
-                // Fetch the JSON file (with timestamp to prevent caching)
-                const response = await fetch('/tracking.json?t=' + new Date().getTime());
-                
-                // If the file is missing or broken
-                if (!response.ok) throw new Error("Database file missing");
+            if (!input) {
+                resultBox.innerHTML = '<div class="text-red-400 font-bold">Please enter a Tracking ID</div>';
+                return;
+            }
 
+            try {
+                // 3. TRY TO FIND THE SPECIFIC JSON FILE
+                // This looks for the file name exactly as you saved it in Admin
+                const response = await fetch(`/content/shipments/${input}.json`);
+                
+                // 4. If file not found (404)
+                if (!response.ok) {
+                    throw new Error("Shipment not found");
+                }
+
+                // 5. If found, show the data!
                 const data = await response.json();
                 
-                // Find the shipment
-                const shipment = data.shipments.find(s => s.id === input);
+                resultBox.innerHTML = `
+                    <div class="text-left space-y-3">
+                        <div class="border-b border-white/10 pb-2">
+                            <div class="text-xs text-gray-500 uppercase tracking-widest">Status</div>
+                            <div class="text-lg font-bold text-orange-400">${data.status}</div>
+                            <div class="text-sm text-gray-300">Location: ${data.location}</div>
+                        </div>
 
-                if (shipment) {
-                    resultBox.innerHTML = `
-                        <div class="text-xs text-gray-500 uppercase tracking-widest mb-1">Current Status</div>
-                        <div class="text-lg font-bold ${shipment.color}">${shipment.status}</div>
-                        <div class="mt-2 text-xs text-gray-400">Last Updated: Just now</div>
-                    `;
-                } else {
-                    resultBox.innerHTML = `<div class="text-red-400 font-bold">ID Not Found</div>`;
-                }
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">Sender</div>
+                                <div class="text-white font-bold">${data.sender.name}</div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-gray-500 uppercase">Receiver</div>
+                                <div class="text-white font-bold">${data.receiver.name}</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/5 p-3 rounded">
+                            <div class="text-[10px] text-gray-500 uppercase">Package</div>
+                            <div class="text-white">${data.package.description}</div>
+                            <div class="text-xs text-gray-400 mt-1">${data.package.weight} kg</div>
+                        </div>
+                    </div>
+                `;
+
             } catch (error) {
-                console.error("Database Error:", error);
-                // Fallback for demo purposes if JSON fails
-                resultBox.innerHTML = `<div class="text-red-400 font-bold">ID Not Found (DB Error)</div>`;
+                // If ID is wrong
+                resultBox.innerHTML = `<div class="text-red-400 font-bold">ID Not Found</div>`;
             }
         }
 
@@ -469,5 +494,4 @@
         }
     </script>
 </body>
-</html> 
-
+</html>
