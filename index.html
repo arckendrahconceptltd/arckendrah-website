@@ -411,23 +411,23 @@
 
         // --- UPDATED: SMART SEARCH FOR REAL ADMIN FILES ---
         async function checkStatus() {
-            // 1. Get the ID the user typed
-            const input = document.getElementById('trackInput').value.trim();
-            const resultBox = document.getElementById('trackResult');
+            // 1. Get the ID the user typed (Match HTML ID 'trackInput')
+            const trackingId = document.getElementById('trackInput').value.trim();
+            const resultDiv = document.getElementById('trackResult');
             
-            // 2. Show loading animation
-            resultBox.innerHTML = '<div class="text-orange-500 animate-pulse">Searching Satellite Network...</div>';
-            resultBox.classList.remove('hidden');
+            // 2. Show searching animation
+            resultDiv.innerHTML = '<div class="text-orange-500 animate-pulse">Searching Global Satellite Network...</div>';
+            resultDiv.classList.remove('hidden');
 
-            if (!input) {
-                resultBox.innerHTML = '<div class="text-red-400 font-bold">Please enter a Tracking ID</div>';
+            if (!trackingId) {
+                resultDiv.innerHTML = '<div class="text-red-400 font-bold">Please enter a Tracking ID</div>';
                 return;
             }
 
             try {
                 // 3. TRY TO FIND THE SPECIFIC JSON FILE
-                // This looks for the file name exactly as you saved it in Admin
-                const response = await fetch(`/content/shipments/${input}.json`);
+                // We add "?v=" + time to force the browser to get the freshest version
+                const response = await fetch(`/content/shipments/${trackingId}.json?v=${new Date().getTime()}`);
                 
                 // 4. If file not found (404)
                 if (!response.ok) {
@@ -437,37 +437,62 @@
                 // 5. If found, show the data!
                 const data = await response.json();
                 
-                resultBox.innerHTML = `
-                    <div class="text-left space-y-3">
-                        <div class="border-b border-white/10 pb-2">
-                            <div class="text-xs text-gray-500 uppercase tracking-widest">Status</div>
-                            <div class="text-lg font-bold text-orange-400">${data.status}</div>
-                            <div class="text-sm text-gray-300">Location: ${data.location}</div>
+                // SAFEGUARDS: We use "?." just in case a field is empty so it doesn't crash
+                resultDiv.innerHTML = `
+                    <div class="bg-white/5 border border-white/10 rounded-lg p-6 text-left space-y-4">
+                        
+                        <div class="border-b border-white/10 pb-3 flex justify-between items-end">
+                            <div>
+                                <div class="text-xs text-gray-500 uppercase tracking-widest mb-1">Current Status</div>
+                                <div class="text-xl font-bold ${getStatusColor(data.status)}">${data.status}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs text-gray-500">Location</div>
+                                <div class="text-sm text-white font-mono">${data.location || 'In Transit'}</div>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <div class="text-[10px] text-gray-500 uppercase">Sender</div>
-                                <div class="text-white font-bold">${data.sender.name}</div>
+                            <div class="bg-black/20 p-3 rounded">
+                                <div class="text-[10px] text-gray-500 uppercase mb-1">From</div>
+                                <div class="text-white font-bold">${data.sender?.name || 'N/A'}</div>
+                                <div class="text-xs text-gray-400">${data.sender?.address || ''}</div>
                             </div>
-                            <div>
-                                <div class="text-[10px] text-gray-500 uppercase">Receiver</div>
-                                <div class="text-white font-bold">${data.receiver.name}</div>
+                            <div class="bg-black/20 p-3 rounded">
+                                <div class="text-[10px] text-gray-500 uppercase mb-1">To</div>
+                                <div class="text-white font-bold">${data.receiver?.name || 'N/A'}</div>
+                                <div class="text-xs text-gray-400">${data.receiver?.address || ''}</div>
                             </div>
                         </div>
 
-                        <div class="bg-white/5 p-3 rounded">
-                            <div class="text-[10px] text-gray-500 uppercase">Package</div>
-                            <div class="text-white">${data.package.description}</div>
-                            <div class="text-xs text-gray-400 mt-1">${data.package.weight} kg</div>
+                        <div class="flex gap-4 items-start">
+                             ${data.package?.image ? `<img src="${data.package.image}" class="w-16 h-16 object-cover rounded border border-white/10">` : ''}
+                             <div>
+                                <div class="text-[10px] text-gray-500 uppercase">Cargo Details</div>
+                                <div class="text-white">${data.package?.description || 'Consignment'}</div>
+                                <div class="text-orange-400 text-xs mt-1 font-mono">${data.package?.weight || '0'} KG</div>
+                             </div>
                         </div>
                     </div>
                 `;
 
             } catch (error) {
-                // If ID is wrong
-                resultBox.innerHTML = `<div class="text-red-400 font-bold">ID Not Found</div>`;
+                // If ID is wrong or file doesn't exist yet
+                resultDiv.innerHTML = `
+                    <div class="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded">
+                        <i class="fa-solid fa-triangle-exclamation mr-2"></i> 
+                        Tracking ID <strong>"${trackingId}"</strong> not found in database.
+                    </div>
+                `;
             }
+        }
+
+        // Helper to pick colors for status text
+        function getStatusColor(status) {
+            if (status === 'Delivered') return 'text-green-400';
+            if (status === 'Pending') return 'text-yellow-400';
+            if (status === 'On Hold') return 'text-red-400';
+            return 'text-blue-400'; // Default
         }
 
         // --- MODAL LOGIC ---
