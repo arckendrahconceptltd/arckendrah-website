@@ -11,6 +11,8 @@ collections:
     folder: "content/shipments"
     create: true
     slug: "{{tracking_id}}"
+    extension: "json"
+    format: "json"
     fields:
       # --- TRACKING INFO ---
       - {label: "Tracking Number", name: "tracking_id", widget: "string", hint: "e.g., KND-884291"}
