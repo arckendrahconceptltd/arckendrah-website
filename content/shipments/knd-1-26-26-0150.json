@@ -1,26 +1,28 @@
 {
-  "location": "Lagos, Nigeria",
+  "location": "Istanbul, Turkey",
   "status": "In Transit",
   "payment": {
-    "amount": "$0.00",
-    "status": "Unpaid"
+    "amount": "$2,500",
+    "status": "Unpaid",
+    "method": "Bank Transfer"
   },
-  "delivery_date": "2026-02-19T09:05:25.499Z",
+  "delivery_date": "2026-02-28T09:05:25.499Z",
   "tracking_id": "KND-1-26-26-0150",
   "sender": {
-    "name": "bingul gundas",
-    "address": "AYDINLI MAYIS SOK.",
-    "phone": "02526796496",
+    "name": "Bingul Gundas",
+    "address": "",
+    "phone": "09526796496",
     "email": "bgundas@gmail.com"
   },
   "receiver": {
-    "name": "Stjepan Hauser",
-    "email": "cbankrolleveryday554@gmail.com",
-    "phone": "05362199735"
+    "name": "Song Hye-Kyo",
+    "email": "songkyohye@proton.me",
+    "phone": "095362199735",
+    "address": "South Korea "
   },
   "package": {
-    "description": "jfhgfcxcvj,hbvcbvcbgjkhbvnbcvg",
+    "description": "Surprise Package for the love of my life.",
     "weight": "Elegant Gucci Luggage 40kg",
-    "image": "/assets/uploads/503-copy.jpg"
+    "image": "/assets/uploads/packaged-box.jpg"
   }
 }
